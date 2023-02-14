@@ -123,14 +123,7 @@ except:
 
 
 if submit_button:
-    '''
-        def __init__(self, s0, s_val, rf, bp, vol, 
-                start, end, val_date,
-                knock_in,
-                knock_out, knock_out_step,
-                ob: list,
-                out, in_range, in_not_out,)
-    '''
+
     sample = SnowBall(s0=s0, s_val=s_val, rf = rf/100, bp = bp/100, vol = vol/100, 
     start=start_date, end=end_date, val_date=val_date, 
     knock_in=knock_in,
@@ -152,30 +145,30 @@ if submit_button:
     st.session_state.result = generate_result(trials, sample, bd_list, bd_lens, ob_days)
 
 
-result_plot, result_stats = st.columns(2)
+    result_plot, result_stats = st.columns(2)
 
-with result_plot:
+    with result_plot:
 
-    if 'result' not in st.session_state:
-        st.session_state['result'] = []
-    print(f'average result: {np.mean(st.session_state.result)}')
-    
-    n, bins, patches = plt.hist(st.session_state.result, bins=100)
+        if 'result' not in st.session_state:
+            st.session_state['result'] = []
+        print(f'average result: {np.mean(st.session_state.result)}')
+        
+        n, bins, patches = plt.hist(st.session_state.result, bins=100)
 
-    fig = px.histogram(data_frame = np.array(st.session_state.result), nbins=100, opacity=0.75, 
-    title='{} - {} \n 整体估值: {:,}'.format(contract, target_ticker, round(principal * np.mean(st.session_state.result))), labels=None,
-    range_y=(0, n))
-    mean = np.mean(st.session_state.result)
-    median = np.median(st.session_state.result)
+        fig = px.histogram(data_frame = np.array(st.session_state.result), nbins=100, opacity=0.75, 
+        title='{} - {} \n 整体估值: {:,}'.format(contract, target_ticker, round( participate * principal * np.mean(st.session_state.result))), labels=None,
+        range_y=(0, n))
+        mean = np.mean(st.session_state.result)
+        median = np.median(st.session_state.result)
 
-    fig.add_annotation(dict(font=dict(color='red',size=14),
-                                        x=mean,
-                                        y=max(n),
-                                        showarrow=False,
-                                        text="单位平均数: {:.4f}".format(mean),
-                                        textangle=0,
-                                        xanchor='right'))
-    fig.add_vline(x=np.mean(st.session_state.result))
+        fig.add_annotation(dict(font=dict(color='red',size=14),
+                                            x=mean,
+                                            y=max(n),
+                                            showarrow=False,
+                                            text="单位平均数: {:.4f}".format(mean),
+                                            textangle=0,
+                                            xanchor='right'))
+        fig.add_vline(x=np.mean(st.session_state.result))
 
 
-    st.plotly_chart(fig)
+        st.plotly_chart(fig)
