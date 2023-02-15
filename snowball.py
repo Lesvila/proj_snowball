@@ -40,6 +40,7 @@ with st.form(key='parameters input'):
         bp = st.number_input('基差', step = 0.1, format='%.2f')
         vol = st.number_input('年化波动率', step = 0.1, format='%.2f')
         trials = st.number_input('模拟次数', step=1000)
+        trigger_check = st.checkbox('本金不折现')
 
         submit_button = st.form_submit_button(label='开始模拟')
 
@@ -129,7 +130,8 @@ if submit_button:
     knock_in=knock_in,
     knock_out=knock_out, knock_out_step=knock_out_step,
     ob = ob_list,
-    out = return_out, in_range = return_range, in_not_out= return_innoout)
+    out = return_out, in_range = return_range, in_not_out= return_innoout,
+    trigger= trigger_check)
 
     bd_list = SnowBall.get_bd(sample)[0]
     bd_lens = SnowBall.get_bd(sample)[1]   
@@ -145,10 +147,10 @@ if submit_button:
     st.session_state.result = generate_result(trials, sample, bd_list, bd_lens, ob_days)
 
 
-    result_plot, result_stats = st.columns(2)
+result_plot, result_stats = st.columns(2)
 
-    with result_plot:
-
+with result_plot:
+    try:
         if 'result' not in st.session_state:
             st.session_state['result'] = []
         print(f'average result: {np.mean(st.session_state.result)}')
@@ -172,3 +174,5 @@ if submit_button:
 
 
         st.plotly_chart(fig)
+    except:
+        pass

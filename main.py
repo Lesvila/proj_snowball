@@ -16,7 +16,8 @@ class SnowBall:
                 knock_in,
                 knock_out, knock_out_step,
                 ob: list,
-                out, in_range, in_not_out,): #out:敲出  in_range: 未敲入未敲出  in_not_out: 敲入但未敲出
+                out, in_range, in_not_out,
+                trigger): #out:敲出  in_range: 未敲入未敲出  in_not_out: 敲入但未敲出
         self.s0 = s0
         self.s_val = s_val
         self.rf = rf
@@ -32,6 +33,7 @@ class SnowBall:
         self.out = out
         self.in_range = in_range
         self.in_not_out = in_not_out
+        self.trigger = trigger
 
 
     def get_bd(self):
@@ -77,20 +79,29 @@ class SnowBall:
                 if price > knock_out:
                     delta = datetime.strptime(bd_day, "%Y-%m-%d %H:%M:%S") - start
                     discount = datetime.strptime(bd_day, "%Y-%m-%d %H:%M:%S") - val_date
-                    payoff = (1 + self.out * (delta.days + 1) / 365) *  exp(-self.rf * (discount.days + 1)/ 365) #收益率
+                    if self.trigger:
+                        payoff = 1+ (self.out * (delta.days + 1) / 365) *  exp(-self.rf * (discount.days + 1)/ 365) #收益率
+                    else:
+                        payoff = (1 + self.out * (delta.days + 1) / 365) *  exp(-self.rf * (discount.days + 1)/ 365) #收益率
                     break
             
             elif s[bd_index] < self.knock_in * self.s0:
-                payoff = (1 + eval(self.in_not_out)) *  exp(-self.rf * (htm_delta_discount.days + 1)/ 365)
+                if self.trigger:
+                    payoff = 1+ (eval(self.in_not_out)) *  exp(-self.rf * (htm_delta_discount.days + 1)/ 365)
+                else:
+                    payoff = (1 + eval(self.in_not_out)) *  exp(-self.rf * (htm_delta_discount.days + 1)/ 365)
                 break
 
             else:
-                payoff = (1 + self.in_range * (htm_delta.days+1) / 365) * exp(-self.rf * (htm_delta_discount.days + 1)/ 365)
+                if self.trigger:
+                    payoff = 1+ (self.in_range * (htm_delta.days+1) / 365) * exp(-self.rf * (htm_delta_discount.days + 1)/ 365)
+                else:
+                    payoff = (1 + self.in_range * (htm_delta.days+1) / 365) * exp(-self.rf * (htm_delta_discount.days + 1)/ 365)
 
         return payoff
 
 
-test1 = SnowBall(6819.43, 5864.47, 0.0214, 0.048, 0.2074, '2022-2-25', '2024-2-26', '2022-12-31', 0.75, 0.96, -0.005, ['2023-1-30','2023-2-27', '2023-3-27','2023-4-25','2023-5-25','2023-6-26','2023-7-25','2023-8-25','2023-9-25','2023-10-25','2023-11-27','2023-12-25','2024-1-25','2024-2-26',], 0.152, 0.152, 'min(0,s[-1]/self.s0 - 1)')
+test1 = SnowBall(6819.43, 5864.47, 0.0214, 0.048, 0.2074, '2022-2-25', '2024-2-26', '2022-12-31', 0.75, 0.96, -0.005, ['2023-1-30','2023-2-27', '2023-3-27','2023-4-25','2023-5-25','2023-6-26','2023-7-25','2023-8-25','2023-9-25','2023-10-25','2023-11-27','2023-12-25','2024-1-25','2024-2-26',], 0.152, 0.152, 'min(0,s[-1]/self.s0 - 1)', True)
 bd_list = SnowBall.get_bd(test1)[0]
 bd_lens = SnowBall.get_bd(test1)[1]   
 ob_days = SnowBall.get_ob_days(test1)  
