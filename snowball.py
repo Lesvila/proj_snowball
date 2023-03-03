@@ -14,9 +14,9 @@ st.set_page_config(
     initial_sidebar_state="auto",
 )
 
-padding = 1
+padding = 2.5
 st.markdown(f""" <style>
-    .reportview-container .main .block-container{{
+    .appview-container .main .block-container{{
         padding-top: {padding}rem;
         padding-right: {padding}rem;
         padding-left: {padding}rem;
