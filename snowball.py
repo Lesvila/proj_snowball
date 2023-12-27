@@ -136,7 +136,6 @@ if submit_button:
     for i in ['result', 'flag_result']:
         if i not in st.session_state:
             st.session_state[i] = ""
-    return_out if type(return_out) == list else [return_out] * len(ob_list)
     sample = SnowBall(s0=s0, s_val=s_val, rf = rf/100, bp = bp/100, vol = vol/100, discount_rate = discount_rate/100,
     start=start_date, end=end_date, val_date=val_date, 
     knock_in=knock_in,
