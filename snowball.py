@@ -31,7 +31,7 @@ hide_menu_style = '''
 st.markdown(hide_menu_style, unsafe_allow_html=True)
 
 st.title("Project Snowball")
-st.sidebar.image('snowball.jpeg', width=300)
+st.sidebar.image('snowball.jpeg', width=200)
 st.sidebar.title('上传要素模板')
 file = st.sidebar.file_uploader(' ', type='xlsx', key=None)
 
@@ -103,27 +103,31 @@ try:
         st.markdown('敲入价格%: <span style="color:red;"> {:.2%} </span>'.format(knock_in),unsafe_allow_html=True)
         st.markdown('敲出价格%: <span style="color:red;"> {:.2%} </span>'.format(knock_out),unsafe_allow_html=True)
         st.markdown('敲出价调整: <span style="color:red;"> {:.2%} </span>'.format(knock_out_step),unsafe_allow_html=True)
-    
-    with return_info:
-        st.header('收益参数')
-
-        return_out = data_main.loc[13]['数值']
-        return_range = data_main.loc[14]['数值']
-        return_innoout = data_main.loc[15]['数值']
-        participate = data_main.loc[16]['数值']
-        deposit = data_main.loc[17]['数值']
-
-        st.markdown('年化敲出收益率: <span style="color:green;"> {:.2%} </span>'.format(return_out),unsafe_allow_html=True)
-        st.markdown('到期收益率: <span style="color:green;"> {:.2%} </span>'.format(return_range),unsafe_allow_html=True)
-        st.markdown('敲入未敲出收益率: <span style="color:green;"> {} </span>'.format(return_innoout),unsafe_allow_html=True)
-        st.markdown('参与率: <span style="color:green;"> {:.2%} </span>'.format(participate),unsafe_allow_html=True)
-        st.markdown('预付金率: <span style="color:green;"> {:.2%} </span>'.format(deposit),unsafe_allow_html=True)
 
     with obdays_info:
         st.header('剩余观察日')
         obdays = pd.DataFrame(data_obdays, dtype='str')
         ob_list = [i[0] for i in obdays.values]
-        st.table(obdays)
+        ob_return = [i[1] for i in obdays.values]
+        ob_return = st.data_editor(obdays,
+                       column_config={'年化收益率': st.column_config.NumberColumn('年化收益率')})    
+
+    with return_info:
+        st.header('收益参数')
+        return_out = [float(i) for i in ob_return['年化收益率'].values] if len(list(ob_return['年化收益率'].dropna())) > 0 else data_main.loc[13]['数值']
+        return_range = data_main.loc[14]['数值']
+        return_innoout = data_main.loc[15]['数值']
+        participate = data_main.loc[16]['数值']
+        deposit = data_main.loc[17]['数值']
+
+        st.markdown('年化敲出收益率: <span style="color:green;"> {:.2%} </span>'.format(return_out) if type(return_out) != list
+                    else '年化敲出收益率: <span style="color:green;"> 见右表 </span>'.format(return_out),unsafe_allow_html=True)
+        st.markdown('到期收益率: <span style="color:green;"> {:.2%} </span>'.format(return_range),unsafe_allow_html=True)
+        st.markdown('敲入未敲出收益率: <span style="color:green;"> {} </span>'.format(return_innoout),unsafe_allow_html=True)
+        st.markdown('参与率: <span style="color:green;"> {:.2%} </span>'.format(participate),unsafe_allow_html=True)
+        st.markdown('预付金率: <span style="color:green;"> {:.2%} </span>'.format(deposit),unsafe_allow_html=True)
+
+
 except:
     st.write('要素列表待上传')
 
@@ -132,13 +136,13 @@ if submit_button:
     for i in ['result', 'flag_result']:
         if i not in st.session_state:
             st.session_state[i] = ""
-
+    return_out if type(return_out) == list else [return_out] * len(ob_list)
     sample = SnowBall(s0=s0, s_val=s_val, rf = rf/100, bp = bp/100, vol = vol/100, discount_rate = discount_rate/100,
     start=start_date, end=end_date, val_date=val_date, 
     knock_in=knock_in,
     knock_out=knock_out, knock_out_step=knock_out_step,
     ob = ob_list,
-    out = return_out, in_range = return_range, in_not_out= return_innoout,
+    out = return_out if type(return_out) == list else [return_out] * len(ob_list), in_range = return_range, in_not_out= return_innoout,
     deposit=deposit,
     knocked_in=knocked_in,
     trigger= trigger_check)
@@ -164,7 +168,7 @@ if submit_button:
 
     with result_plot:
         try:
-            print(f'average result: {np.mean(st.session_state.result)}')
+            # print(f'average result: {np.mean(st.session_state.result)}')
             
             n, bins, patches = plt.hist(st.session_state.result, bins=100)
 
@@ -190,7 +194,6 @@ if submit_button:
     with result_stats:
         try:
             pattern = Counter(st.session_state.flag_result)
-            print(pattern)
             st.write('未敲入直接敲出次数: {:,}, 概率: {:.2%}'.format(pattern[1], pattern[1]/trials))
             st.write('敲入后直接敲出次数: {:,}, 概率: {:.2%}'.format(pattern[2], pattern[2]/trials))
             st.write('敲入后但未敲出次数: {:,}, 概率: {:.2%}'.format(pattern[3], pattern[3]/trials))
